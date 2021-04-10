@@ -1,23 +1,37 @@
 from cassandra.cluster import Cluster
 from cassandra.auth import PlainTextAuthProvider
 
-from flask import Flask, request, Response, redirect, url_for, jsonify
+from flask import Blueprint, request, Response, redirect, url_for, jsonify
 
+main = Blueprint('main', __name__)
 
-app = Flask(__name__)
-
-@app.route("/create_user", methods=["POST"])
+@main.route("/create_user", methods=["POST"])
 def create_user():
 
-    print(request.form['user'])
+    user = request.form['user']
+    pwd = request.form['pass']
+
+    # Code to add user to database
+
     return jsonify("{'test': 'this is test data'}")
 
+
+@main.route("/login", methods=["POST"])
 def login():
 
+    user =  request.form['user']
+    pwd = request.form['pass']
+
+    # Check if user exists in db
+    # hash(pwd) and check against stored in db
+    good = True
+    if good:
+        pass
+        
     return jsonify("    ")
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)
 
 # cloud_config = {
 #         'secure_connect_bundle': '<</PATH/TO/>>secure-connect-p2021.zip'
