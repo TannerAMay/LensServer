@@ -14,12 +14,12 @@ def create_user():
 
     JSON Expectation:
     {
-        'user': '<username>',
-        'pass': '<hashed password>',
-        'bio': '<bio>'
+        'user': '<username text>',
+        'pass': '<hashed password text>',
+        'bio': '<bio text>'
     }
 
-    Codes: Code-level: 1
+    Codes: Code Signature: 1
         100: User successfully added to both core.userdata and auth.users.
         101: Failed to add to auth.user table.
         102: Failed to add to core.userdata table.
@@ -43,15 +43,15 @@ def login():
 
     JSON Expectation:
     {
-        'user': '<username>',
-        'pass': '<hashed password>'
+        'user': '<username text>',
+        'pass': '<hashed password text>'
     }
 
-    Codes: Code-level: 2
+    Codes: Code Signature: 2
         200: User was found in auth.users and successfully logged in.
         201: Failed to find user in user.auth.
 
-    return:  JSON object describing result of command.
+    return: JSON object describing result of command.
     """
 
     remember = True if request.form.get('remember') else False
@@ -80,3 +80,76 @@ def profile():
 def logout():
     logout_user()
     return "logged out"
+
+
+"""
+DOCSTRINGS FOR FUTURE FUNCTIONS
+"""
+
+# Submitting post
+"""Submit a new post to a topic or user.
+
+JSON Expectations:
+{
+    'title': '<title text>',
+    'contenttype': '<text="text" or "link"',
+    'author': '<username text>',
+    'timeposted': timestamp -> int(time.time())
+    'parentid': UUID -> Empty if submitting to a user
+}
+
+Codes: Code Signature: 3
+    300: Post successfully submitted.
+    ... add more errors as function is made
+
+return: JSON object describing result of command.
+"""
+
+# Viewing a post
+"""Retrieve a post from the database.
+
+JSON Expectations:
+{
+    'postid': UUID
+}
+
+Codes: Code Signature: 4
+    400: Post successfully retrieved.
+    ... add more errors as function is made
+
+return: JSON object describing result of command.
+"""
+
+# Casting a vote and recording viewtime
+"""Send an upvote or downvote to post and record how long the user viewed it.
+
+JSON Expectations:
+{
+    'username': '<username text>',
+    'postID': UUID,
+    'upvote': bool,
+    'viewtime': int
+}
+
+Codes: Code Signature: 5
+    500: Post successfully submitted.
+    ... add more errors as function is made
+
+return: JSON object describing result of command.
+"""
+
+# Get posts from user or in topic
+"""Retrieve posts from a topic or user.
+
+JSON Expectations:
+{
+    'username': '<username text>' -> Put topic names in this field too but make sure to mark topicbool as true,
+    'istopic': bool
+}
+
+Codes: Code Signature: 6
+    600: Post successfully submitted.
+    ... add more errors as function is made
+
+return: JSON object describing result of command.
+"""
