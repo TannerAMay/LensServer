@@ -8,11 +8,16 @@ from . import db
 
 main = Blueprint('main', __name__)
 
+
 @main.route("/create_user", methods=["POST"])
 def create_user():
+    createResult = db_astra.create_user(request.form['user'], request.form['pass'])
 
-    if db_astra.create_user(request.form['user'], request.form['pass']):
-        return jsonify("{'Success': 'The user was added to core.user.'")
+    if createResult[0] and createResult[1]:
+        return jsonify("{'Success': 'The user was added to core.user and auth.user.'")
+
+    if createResult[0]:
+        return jsonify("{'Failure': 'The user was not added to auth.user.'")
 
     return jsonify("{'Failure': 'The user was not added to core.user.'")
 
