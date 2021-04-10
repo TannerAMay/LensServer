@@ -2,6 +2,10 @@ from cassandra.cluster import Cluster
 from cassandra.auth import PlainTextAuthProvider
 
 from flask import Blueprint, request, Response, redirect, url_for, jsonify
+from flask_login import login_user, logout_user, login_required, current_user
+
+from .models import User
+from . import db
 
 main = Blueprint('main', __name__)
 
@@ -19,16 +23,37 @@ def create_user():
 @main.route("/login", methods=["POST"])
 def login():
 
-    user =  request.form['user']
+    user = request.form['user']
     pwd = request.form['pass']
+    remember = False
+
+    print(user)
+    user_to_test = User()
+    user_to_test.username = user
+    user_to_test.password = pwd
 
     # Check if user exists in db
     # hash(pwd) and check against stored in db
     good = True
-    if good:
-        pass
+    
+    print("cum:", pwd, pwd == "test")
+    if user == "bruhman" and pwd == "test":
+        print("/\/\/\/\/\/\/\/\WE GOOD", user_to_test.username)
+        login_user(user_to_test, remember=remember)
         
-    return jsonify("    ")
+    return redirect(url_for('main.profile'))
+
+@main.route('/profile')
+@login_required
+def profile():
+    print("EMEME")
+    return current_user.username
+
+@main.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return "logged out"
 
 # if __name__ == '__main__':
 #     app.run(debug=True)
