@@ -1,14 +1,13 @@
-from flask import Flask, request, Response, redirect, url_for, jsonify
+from flask import Blueprint, Flask, request, Response, redirect, url_for, jsonify
+from cassandra.cluster import Cluster
+from cassandra.auth import PlainTextAuthProvider
 
 import db
 
+main = Blueprint('main', __name__)
 
-app = Flask(__name__)
-
-
-@app.route("/create_user", methods=["POST"])
+@main.route("/create_user", methods=["POST"])
 def create_user():
-    print(request.form['user'])
 
     if db.create_user(request.form['user'], request.form['pass']):
         return jsonify("{'Success': 'The user was added to core.user.'")
@@ -16,13 +15,12 @@ def create_user():
     return jsonify("{'Failure': 'The user was not added to core.user.'")
 
 
-@app.route("/login", methods=["POST"])
+@main.route("/login", methods=["POST"])
 def login():
+
     if db.login(request.form['user'], request.form['pass']):
         return jsonify("{'Success': 'The user is logged in.'")
 
     return jsonify("{'Failure': 'The user was not logged in.'")
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
