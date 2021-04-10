@@ -1,0 +1,17 @@
+cassandra-driver==3.25.0
+click==7.1.2
+Flask==1.1.2
+Flask-Login==0.5.0
+Flask-SQLAlchemy==2.5.1
+geomet==0.2.1.post1
+greenlet==1.0.0
+importlib-metadata==3.10.0
+itsdangerous==1.1.0
+Jinja2==2.11.3
+MarkupSafe==1.1.1
+pkg-resources==0.0.0
+six==1.15.0
+SQLAlchemy==1.4.7
+typing-extensions==3.7.4.3
+Werkzeug==1.0.1
+zipp==3.4.1
