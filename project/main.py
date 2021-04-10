@@ -1,17 +1,7 @@
-<<<<<<< HEAD
 from flask import Blueprint, Flask, request, Response, redirect, url_for, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
-from cassandra.cluster import Cluster
-from cassandra.auth import PlainTextAuthProvider
 
 import db_astra
-=======
-from cassandra.cluster import Cluster
-from cassandra.auth import PlainTextAuthProvider
-
-from flask import Blueprint, request, Response, redirect, url_for, jsonify
-from flask_login import login_user, logout_user, login_required, current_user
->>>>>>> aaee0f149ea12bf851803f2bb9a2e1e20f345415
 
 from .models import User
 from . import db

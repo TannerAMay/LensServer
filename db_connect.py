@@ -1,7 +1,7 @@
 from cassandra.cluster import Cluster
 from cassandra.auth import PlainTextAuthProvider
 
-from secrets import PATH_TO_ZIP, ASTRA_CLIENT_ID, ASTRA_CLIENT_SECRET
+from project.keys import PATH_TO_ZIP, ASTRA_CLIENT_ID, ASTRA_CLIENT_SECRET
 
 CLOUD_CONFIG = {'secure_connect_bundle': PATH_TO_ZIP}
 AUTH_PROVIDER = PlainTextAuthProvider(ASTRA_CLIENT_ID, ASTRA_CLIENT_SECRET)

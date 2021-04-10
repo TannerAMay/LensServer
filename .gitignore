@@ -8,3 +8,4 @@
 __pycache__/
 project/secrets.py
 secure-connect-p2021.zip
+auth/
