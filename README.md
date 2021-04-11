@@ -14,9 +14,11 @@ pip install -r requirements.txt
 sudo apt install gunicorn
 ```
 This willl install all the relevant tools and activate a Python virtual environment. To exit the venv, run:
+
 `deactivate`
 
 Finally, to start the server run:
+
 `./run.sh`
 
 ## SSL Support - Future
@@ -25,6 +27,10 @@ In order for phones to interact with this server, we will need to enable SSL. We
 Future versions of the server can get a legit signed certificate from a CA to allow the mobile app to function.
 
 ### Generate and Use SSL Certs
+The first command generates the certificate and the private key to be used with gunicorn. 
 
-```openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 365
-gunicorn --certfile=cert.pem --keyfile=key.pem --bind :443 wsgi:app --preload```
+```openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 365```
+
+The second runs gunicorn but forces HTTPS.
+
+```gunicorn --certfile=cert.pem --keyfile=key.pem --bind :443 wsgi:app --preload```
