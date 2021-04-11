@@ -31,7 +31,7 @@ def create_user(username: str, password: str, salt: bytes) -> Tuple[bool, bool]:
                                         f"VALUES ('{username}', '', '{int(time())}') "
                                         f"IF NOT EXISTS").one()
     addUserToAuth = SESSION.execute(f"INSERT INTO auth.users (username, password) "
-                                    f"VALUES ('{username}', {password}) "
+                                    f"VALUES ('{username}', '{password}') "
                                     f"IF NOT EXISTS").one()
 
     return addUserToUserdata[0], addUserToAuth[0]
