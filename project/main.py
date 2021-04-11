@@ -29,12 +29,15 @@ def create_user():
     createResult = db_astra.create_user(request.form['user'], request.form['pass'])
 
     if createResult[0] and createResult[1]:
-        return jsonify("{'100': 'Success! The user was added to core.user and auth.user.'")
+        return jsonify("{'100': 'Success! The user was added to core.userdata and auth.users.'")
+    else:
+        if not createResult[0] and not createResult[1]:
+            return jsonify("{'101': 'Failure! The user not added to core.userdata nor auth.users.'")
 
-    if createResult[0]:
-        return jsonify("{'101': 'Failure! The user was not added to auth.user.'")
+        if createResult[0]:
+            return jsonify("{'102': 'Failure! The user was not added to auth.users.'")
 
-    return jsonify("{'102': 'Failure! The user was not added to core.user.'")
+    return jsonify("{'103': 'Failure! The user was not added to core.userdata.'")
 
 
 @main.route("/login", methods=["POST"])
@@ -69,6 +72,148 @@ def login():
     return jsonify("{'201': 'Failure! The user was not found in auth.users and could not be logged in.'")
     
 
+@main.route('/submit_post', methods=["POST"])
+@login_required
+def submit_post():
+    """Submit a new post to a topic or user.
+
+    JSON Expectation:
+    {
+        'title': '<title text>',
+        'contenttype': '<text="text" or "link"',
+        'content': '<text>',
+        'author': '<username text>',
+        'parentid': text -> Username or name of a topic
+    }
+
+    Codes: Code Signature: 3
+        300: Post successfully submitted.
+        301: Failure. The post was not added to to core.posts, core.childposts, nor core.uservotes.
+        302: Failure. The post was not added to core.posts nor core.childposts.
+        303: Failure. The post was not added to core.posts nor core.uservotes.
+        304: Failure. The post was not added to core.childposts nor core.uservotes.
+        305: Failure. The post was not added to core.posts.
+        306: Failure. The post was not added to core.childposts.
+        307: Failure. The post was not added to core.uservotes.
+
+    return: JSON object describing result of command.
+    """
+    submitResult = db_astra.submit_post(
+        title=request.form['title'],
+        contentType=request.form['contenttype'],
+        content=request.form['content'],
+        author=request.form['author'],
+        parentID=request.form['parentid']
+    )
+
+    if submitResult[0] and submitResult[1] and submitResult[2]:
+        return jsonify("{'300': 'Success! The post was added to core.posts, core.childposts, and core.uservotes.")
+    else:
+        if not submitResult[0] and not submitResult[1] and not submitResult[2]:
+            return jsonify("{'301': 'Failure! The post was not added to core.posts, core.childposts, nor core.uservotes.'")
+
+        if not submitResult[0] and not submitResult[1]:
+            return jsonify("{'302': 'Failure! The post was not added to core.posts nor core.childposts.'")
+
+        if not submitResult[0] and not submitResult[2]:
+            return jsonify("{'303': 'Failure! The post was not added to core.posts nor core.uservotes.'")
+
+        if not submitResult[1] and not submitResult[2]:
+            return jsonify("{'304': 'Failure! The post was not added to core.childposts nor core.uservotes.'")
+
+        if not submitResult[0]:
+            return jsonify("{'305': 'Failure! The post was not added to core.posts.'")
+
+        if not submitResult[1]:
+            return jsonify("{'306': 'Failure! The post was not added to core.childposts.'")
+
+    return jsonify("{'307': 'Failure! The post was not added to core.uservotes.'")
+
+
+@main.route('/submit_comment', methods=["POST"])
+@login_required
+def submit_comment():
+    """Submit a new comment to a post.
+
+    JSON Expectation:
+    {
+        'content': '<text>',
+        'author': '<username text>',
+        'parentid': UUID -> NO QUOTES!
+    }
+
+    Codes: Code Signature: 7
+        700: Post successfully submitted.
+        701: Failure. The post was not added to to core.comments, core.childcomments, nor core.uservotes.
+        702: Failure. The post was not added to core.comments nor core.childcomments.
+        703: Failure. The post was not added to core.comments nor core.uservotes.
+        704: Failure. The post was not added to core.childcomments nor core.uservotes.
+        705: Failure. The post was not added to core.comments.
+        706: Failure. The post was not added to core.childcomments.
+        707: Failure. The post was not added to core.uservotes.
+
+    return: JSON object describing result of command.
+    """
+    submitResult = db_astra.submit_comment(
+        content=request.form['content'],
+        author=request.form['author'],
+        parentID=request.form['parentid']
+    )
+
+    if submitResult[0] and submitResult[1] and submitResult[2]:
+        return jsonify("{'700': 'Success! The post was added to core.comments, core.childcomments, and core.uservotes.")
+    else:
+        if not submitResult[0] and not submitResult[1] and not submitResult[2]:
+            return jsonify("{'701': 'Failure! The post was not added to core.comments, core.childcomments, nor core.uservotes.'")
+
+        if not submitResult[0] and not submitResult[1]:
+            return jsonify("{'702': 'Failure! The post was not added to core.comments nor core.childcomments.'")
+
+        if not submitResult[0] and not submitResult[2]:
+            return jsonify("{'703': 'Failure! The post was not added to core.comments nor core.uservotes.'")
+
+        if not submitResult[1] and not submitResult[2]:
+            return jsonify("{'704': 'Failure! The post was not added to core.childcomments nor core.uservotes.'")
+
+        if not submitResult[0]:
+            return jsonify("{'705': 'Failure! The post was not added to core.comments.'")
+
+        if not submitResult[1]:
+            return jsonify("{'706': 'Failure! The post was not added to core.childcomments.'")
+
+    return jsonify("{'707': 'Failure! The post was not added to core.uservotes.'")
+
+
+@main.route('/rtup', methods=["GET"])
+@login_required
+def rtup():
+    """Retrieve posts from a topic or user.
+
+    JSON Expectation:
+    {
+        'source': '<text>' -> Usernames or topics can go in this field
+    }
+
+    Codes: Code Signature: 6
+        600: Post UUID(s) successfully retrieved from core.childposts.
+        601: Failure. Post UUID(s) could not be retrieved from core.childposts.
+
+    return: JSON Result:
+    {
+        '<error number string>': '<error description string>',
+        'contents': '<Python list containing up to zero to ten, inclusive, UUIDs>'
+    }
+    """
+    postUUIDs = db_astra.retrieve_post_from_topic_or_user(request.form["source"])
+
+    if postUUIDs:
+        return jsonify('{' + f"'600': 'Success! Posts have been retrieved from core.childposts.',"
+                             f"'contents': {postUUIDs}" + "}")
+
+    return jsonify('{' + f"'601': 'Failure! Posts could not be retrieved from core.childposts.',"
+                         f"'contents': {[]}" + "}")
+
+
 @main.route('/profile')
 @login_required
 def profile():
@@ -86,29 +231,10 @@ def logout():
 DOCSTRINGS FOR FUTURE FUNCTIONS
 """
 
-# Submitting post
-"""Submit a new post to a topic or user.
-
-JSON Expectations:
-{
-    'title': '<title text>',
-    'contenttype': '<text="text" or "link"',
-    'content': '<text>',
-    'author': '<username text>',
-    'parentid': UUID -> Empty if submitting to a user
-}
-
-Codes: Code Signature: 3
-    300: Post successfully submitted.
-    ... add more errors as function is made
-
-return: JSON object describing result of command.
-"""
-
 # Viewing a post
 """Retrieve a post from the database.
 
-JSON Expectations:
+JSON Expectation:
 {
     'postid': UUID
 }
@@ -123,7 +249,7 @@ return: JSON object describing result of command.
 # Casting a vote and recording viewtime
 """Send an upvote or downvote to post and record how long the user viewed it.
 
-JSON Expectations:
+JSON Expectation:
 {
     'username': '<username text>',
     'postID': UUID,
@@ -133,22 +259,6 @@ JSON Expectations:
 
 Codes: Code Signature: 5
     500: Post successfully submitted.
-    ... add more errors as function is made
-
-return: JSON object describing result of command.
-"""
-
-# Get posts from user or in topic
-"""Retrieve posts from a topic or user.
-
-JSON Expectations:
-{
-    'username': '<username text>' -> Put topic names in this field too but make sure to mark topicbool as true,
-    'istopic': bool
-}
-
-Codes: Code Signature: 6
-    600: Post successfully submitted.
     ... add more errors as function is made
 
 return: JSON object describing result of command.
