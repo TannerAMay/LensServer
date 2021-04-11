@@ -6,6 +6,8 @@ import db_astra
 from models import User
 from keys import FLASK_SECRET_KEY
 
+# from app import app
+
 # db = SQLAlchemy()
 
 # main = Blueprint('main', __name__)
@@ -21,7 +23,7 @@ app.config['SECRET_KEY'] = FLASK_SECRET_KEY
 # app.register_blueprint(main_blueprint)
 
 login_manager = LoginManager()
-login_manager.login_view = 'app.login'
+login_manager.login_view = 'login'
 login_manager.init_app(app)
 
 from models import User
