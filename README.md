@@ -10,3 +10,13 @@ export FLASK_APP=project
 export FLASK_DEBUG=1
 
 deactivate
+
+
+
+lensserver
+
+gcloud init
+gcloud components install app-engine-python
+gcloud config set project MY-PROJECT-ID
+gcloud services enable cloudbuild.googleapis.com
+gcloud app create --project=MY-PROJECT-ID~

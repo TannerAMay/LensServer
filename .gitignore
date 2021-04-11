@@ -8,3 +8,4 @@
 __pycache__/
 secure-connect-p2021.zip
 auth/
+*.pyc
