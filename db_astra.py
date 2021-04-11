@@ -20,18 +20,18 @@ def create_user(username: str, password: str, salt: bytes) -> Tuple[bool, bool]:
     """
     SESSION = gen_session()
 
-    hash = hashlib.pbkdf2_hmac(
-        'sha256',  # The hash digest algorithm for HMAC
-        password.encode('utf-8'),  # Convert the password to bytes
-        salt,  # Provide the salt
-        100000  # It is recommended to use at least 100,000 iterations of SHA-256
-    )
+    # hash = hashlib.pbkdf2_hmac(
+    #     'sha256',  # The hash digest algorithm for HMAC
+    #     password.encode('utf-8'),  # Convert the password to bytes
+    #     salt,  # Provide the salt
+    #     100000  # It is recommended to use at least 100,000 iterations of SHA-256
+    # )
 
     addUserToUserdata = SESSION.execute(f"INSERT INTO core.userdata (username, bio, createdate) "
                                         f"VALUES ('{username}', '', '{int(time())}') "
                                         f"IF NOT EXISTS").one()
-    addUserToAuth = SESSION.execute(f"INSERT INTO auth.users (username, password, salt) "
-                                    f"VALUES ('{username}', {hash.hex()}, {salt.hex()}) "
+    addUserToAuth = SESSION.execute(f"INSERT INTO auth.users (username, password) "
+                                    f"VALUES ('{username}', {password}) "
                                     f"IF NOT EXISTS").one()
 
     return addUserToUserdata[0], addUserToAuth[0]
@@ -49,15 +49,15 @@ def login(username: str, password: str) -> bool:
     SESSION = gen_session()
     cmd = SESSION.execute(f"SELECT * FROM auth.users WHERE username='{username}'").one()
 
-    hash = hashlib.pbkdf2_hmac(
-        'sha256',  # The hash digest algorithm for HMAC
-        password.encode('utf-8'),  # Convert the password to bytes
-        cmd[2],  # Provide the salt
-        100000  # It is recommended to use at least 100,000 iterations of SHA-256
-    )
+    # hash = hashlib.pbkdf2_hmac(
+    #     'sha256',  # The hash digest algorithm for HMAC
+    #     password.encode('utf-8'),  # Convert the password to bytes
+    #     cmd[2],  # Provide the salt
+    #     100000  # It is recommended to use at least 100,000 iterations of SHA-256
+    # )
 
     # If select returned results or more than two columns or passwords do not match, return false.
-    if cmd is None or len(cmd) != 2 or cmd[1] != hash.hex():
+    if cmd is None or len(cmd) != 2 or cmd[1] != password:
         return False
 
     return True
