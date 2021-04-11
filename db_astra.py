@@ -157,11 +157,21 @@ def cast_vote_record_viewtime(username: str, source: uuid.UUID, upvote: bool, vi
 
 def retrieve_post_from_topic_or_user(source: str, username: str, numPosts: int):
     SESSION = gen_session()
-    cmd = SESSION.execute(f"SELECT childid FROM core.childposts WHERE parentid='{source}'").all()
+    postIDs = SESSION.execute(f"SELECT childid FROM core.childposts WHERE parentid='{source}'").all()
+
+    whereConditions = "WHERE "
+    first = True
+    for row in postIDs:
+        if first:
+            whereConditions += f"postid={row[0]}"
+        else:
+            whereConditions += f" OR postid={row[0]}"
+
+    posts = SESSION.execute(f"SELECT postid FROM core.posts {whereConditions} ORDER BY watchtime DESC")
 
     # Get UUIDs of numPosts number of posts
     postUUIDs = []
-    for row in cmd:
+    for row in posts:
         if SESSION.execute(f"SELECT username FROM core.uservotes WHERE username='{username}' and postid={row[0]}").one() is not None:
             continue
         if len(postUUIDs) > numPosts - 1:
