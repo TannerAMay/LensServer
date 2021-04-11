@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from time import time
 from typing import Tuple
 
@@ -11,14 +13,14 @@ def create_user(username: str, password: str) -> Tuple[bool, bool]:
     password: User's hashed password.
     Return: First index is result of adding to core.userdata, second is result of adding to auth.user.
     """
-    addUserToUser = SESSION.execute(f"insert into core.userdata (username, bio, create_date) "
-                                    f"values ('{username}', '', '{int(time())}') "
-                                    f"if not exists").one()
-    addUserToAuth = SESSION.execute(f"insert into auth.users (username, password) "
-                                    f"values ('{username}', '{password}') "
-                                    f"if not exists").one()
+    addUserToUserdata = SESSION.execute(f"INSERT INTO core.userdata (username, bio, createdate) "
+                                        f"VALUES ('{username}', '', '{int(time())}') "
+                                        f"IF NOT EXISTS").one()
+    addUserToAuth = SESSION.execute(f"INSERT INTO auth.users (username, password) "
+                                    f"VALUES ('{username}', '{password}') "
+                                    f"IF NOT EXISTS").one()
 
-    return addUserToUser[0], addUserToAuth[0]
+    return addUserToUserdata[0], addUserToAuth[0]
 
 
 def login(username: str, password: str) -> bool:
@@ -30,7 +32,7 @@ def login(username: str, password: str) -> bool:
     password: User's hashed password.
     Return: True if username-password combo exists in auth.users, else false.
     """
-    cmd = SESSION.execute(f"select * from auth.users where username='{username}'").one()
+    cmd = SESSION.execute(f"SELECT * FROM auth.users WHERE username='{username}'").one()
 
     # If select returned results or more than two columns or passwords do not match, return false.
     if cmd is None or len(cmd) != 2 or cmd[1] != password:

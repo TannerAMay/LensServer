@@ -93,8 +93,8 @@ JSON Expectations:
 {
     'title': '<title text>',
     'contenttype': '<text="text" or "link"',
+    'content': '<text>',
     'author': '<username text>',
-    'timeposted': timestamp -> int(time.time())
     'parentid': UUID -> Empty if submitting to a user
 }
 
