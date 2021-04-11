@@ -30,8 +30,8 @@ def create_user(username: str, password: str, salt: bytes) -> Tuple[bool, bool]:
     addUserToUserdata = SESSION.execute(f"INSERT INTO core.userdata (username, bio, createdate) "
                                         f"VALUES ('{username}', '', '{int(time())}') "
                                         f"IF NOT EXISTS").one()
-    addUserToAuth = SESSION.execute(f"INSERT INTO auth.users (username, hash, hashsalt, password, salt) "
-                                    f"VALUES ('{username}', '{hash.hex()}, {salt.hex()}') "
+    addUserToAuth = SESSION.execute(f"INSERT INTO auth.users (username, password, salt) "
+                                    f"VALUES ('{username}', {hash.hex()}, {salt.hex()}) "
                                     f"IF NOT EXISTS").one()
 
     return addUserToUserdata[0], addUserToAuth[0]
