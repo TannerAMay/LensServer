@@ -6,6 +6,7 @@ import db_astra
 from models import User
 from keys import FLASK_SECRET_KEY
 
+
 # from app import app
 
 # db = SQLAlchemy()
@@ -44,6 +45,7 @@ def load_user(username):
 
 @app.route("/")
 def home():
+    print("FEFE")
     return "Eat me"
 
 
@@ -65,6 +67,7 @@ def create_user():
 
     return: JSON object describing result of command.
     """
+
     createResult = db_astra.create_user(request.form['user'], request.form['pass'])
 
     if createResult[0] and createResult[1]:

@@ -1,7 +1,8 @@
 from time import time
 from typing import Tuple
 
-from db_connect import SESSION
+from db_connect import gen_session
+
 
 
 def create_user(username: str, password: str) -> Tuple[bool, bool]:
@@ -11,9 +12,13 @@ def create_user(username: str, password: str) -> Tuple[bool, bool]:
     password: User's hashed password.
     Return: First index is result of adding to core.userdata, second is result of adding to auth.user.
     """
+
+    SESSION = gen_session()
+
     addUserToUser = SESSION.execute(f"insert into core.userdata (username, bio, createdate) "
                                     f"values ('{username}', '', '{int(time())}') "
                                     f"if not exists").one()
+ 
     addUserToAuth = SESSION.execute(f"insert into auth.users (username, password) "
                                     f"values ('{username}', '{password}') "
                                     f"if not exists").one()
@@ -30,6 +35,8 @@ def login(username: str, password: str) -> bool:
     password: User's hashed password.
     Return: True if username-password combo exists in auth.users, else false.
     """
+    SESSION = gen_session()
+
     cmd = SESSION.execute(f"select * from auth.users where username='{username}'").one()
 
     # If select returned results or more than two columns or passwords do not match, return false.
