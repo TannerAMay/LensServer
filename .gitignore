@@ -6,6 +6,6 @@
 .idea/vcs.xml
 /venv/
 __pycache__/
-project/secrets.py
 secure-connect-p2021.zip
 auth/
+*.pyc

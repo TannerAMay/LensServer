@@ -3,7 +3,8 @@ from typing import Tuple
 from time import time
 import uuid
 
-from db_connect import SESSION
+from db_connect import gen_session
+
 
 
 READING_RATE = 250  # Words per minute
@@ -17,12 +18,15 @@ def create_user(username: str, password: str) -> Tuple[bool, bool]:
     password: User's hashed password.
     Return: First index is result of adding to core.userdata, second is result of adding to auth.user.
     """
+    SESSION = gen_session()
+
     addUserToUserdata = SESSION.execute(f"INSERT INTO core.userdata (username, bio, createdate) "
                                         f"VALUES ('{username}', '', '{int(time())}') "
                                         f"IF NOT EXISTS").one()
     addUserToAuth = SESSION.execute(f"INSERT INTO auth.users (username, password) "
                                     f"VALUES ('{username}', '{password}') "
                                     f"IF NOT EXISTS").one()
+
 
     return addUserToUserdata[0], addUserToAuth[0]
 
@@ -36,7 +40,9 @@ def login(username: str, password: str) -> bool:
     password: User's hashed password.
     Return: True if username-password combo exists in auth.users, else false.
     """
+    SESSION = gen_session()
     cmd = SESSION.execute(f"SELECT * FROM auth.users WHERE username='{username}'").one()
+
 
     # If select returned results or more than two columns or passwords do not match, return false.
     if cmd is None or len(cmd) != 2 or cmd[1] != password:
@@ -53,6 +59,7 @@ def submit_post(title: str, contentType: str, content: str, author: str, parentI
 
     thisUUID = uuid.uuid4()
 
+    SESSION = gen_session()
     # Add new post to posts table
     addToPosts = SESSION.execute(f"INSERT INTO core.posts "
                                  f"(postid, parentid, title, author, content, contenttype, views, upvotes, downvotes, watchtime, dateposted) "
@@ -78,7 +85,7 @@ def submit_comment(author: str, content: str, parentID: uuid.UUID):
     watchTime = len(content) // READING_RATE + 1
 
     thisUUID = uuid.uuid4()
-
+    SESSION = gen_session()
     # Add new comment to comment table
     addToComments = SESSION.execute(f"INSERT INTO core.comments "
                                     f"(postid, author, content, views, upvotes, downvotes, watchtime, dateposted) "
@@ -102,6 +109,7 @@ def submit_comment(author: str, content: str, parentID: uuid.UUID):
 
 
 def retrieve_post_comment_data(postUUID: uuid.UUID, comment: bool):
+    SESSION = gen_session()
     if comment:
         cmd = SESSION.execute(f"SELECT * FROM core.comments WHERE postid={postUUID}").one()
     else:
@@ -114,6 +122,7 @@ def retrieve_post_comment_data(postUUID: uuid.UUID, comment: bool):
 
 
 def cast_vote_record_viewtime(username: str, source: uuid.UUID, upvote: bool, viewtime: int, comment: bool):
+    SESSION = gen_session()
     # Create row in uservotes table
     addToUservotes = SESSION.execute(f"INSERT INTO core.uservotes "
                                      f"(postid, username, upvoted, viewtime) "
@@ -135,8 +144,8 @@ def cast_vote_record_viewtime(username: str, source: uuid.UUID, upvote: bool, vi
 
 
 def retrieve_post_from_topic_or_user(source: str, username: str, numPosts: int):
-    cmd = SESSION.execute(f"SELECT childid FROM core.childposts "
-                          f"WHERE parentid='{source}'").all()
+    SESSION = gen_session()
+    cmd = SESSION.execute(f"SELECT childid FROM core.childposts WHERE parentid='{source}'").all()
 
     # Get UUIDs of numPosts number of posts
     postUUIDs = []
@@ -151,6 +160,7 @@ def retrieve_post_from_topic_or_user(source: str, username: str, numPosts: int):
 
 
 def get_followed_topics(username: str):
+    SESSION = gen_session()
     cmd = SESSION.execute(f"SELECT follows FROM core.following "
                           f"WHERE username='{username}'").all()
     topics = SESSION.execute(f"SELECT name FROM core.topics").all()
@@ -164,6 +174,7 @@ def get_followed_topics(username: str):
 
 
 def follow(name: str, username: str):
+    SESSION = gen_session()
     cmd = SESSION.execute(f"INSERT INTO core.following "
                           f"(username, follows) "
                           f"VALUES "

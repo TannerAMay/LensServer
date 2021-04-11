@@ -1,15 +1,56 @@
 from flask import Blueprint, Flask, request, Response, redirect, url_for, jsonify
-from flask_login import login_user, logout_user, login_required, current_user
+from flask_login import login_user, logout_user, login_required, current_user, LoginManager
 from random import shuffle
 
 import db_astra
 
-from .models import User
+from models import User
+from keys import FLASK_SECRET_KEY
 
-main = Blueprint('main', __name__)
+
+# from app import app
+
+# db = SQLAlchemy()
+
+# main = Blueprint('main', __name__)
+
+app = Flask(__name__)
+
+app.config['SECRET_KEY'] = FLASK_SECRET_KEY
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+
+# db.init_app(app)
+
+# from .main import main as main_blueprint
+# app.register_blueprint(main_blueprint)
+
+login_manager = LoginManager()
+login_manager.login_view = 'login'
+login_manager.init_app(app)
+
+from models import User
+
+@login_manager.user_loader
+def load_user(username):
+    """Load user from Astra by username, load into User object
+    
+    current_user calls this function
+    """
+    user = User()
+    user.username = username
+    user.password = "test"
+    ## add all data from astra for this user
+    
+    return user
 
 
-@main.route("/create_user", methods=["POST"])
+@app.route("/")
+def home():
+    print("FEFE")
+    return "Eat me"
+
+
+@app.route("/create_user", methods=["POST"])
 def create_user():
     """Add user data to database.
 
@@ -27,6 +68,7 @@ def create_user():
 
     return: JSON object describing result of command.
     """
+
     createResult = db_astra.create_user(request.form['user'], request.form['pass'])
 
     if createResult[0] and createResult[1]:
@@ -41,7 +83,7 @@ def create_user():
     return jsonify("{'103': 'Failure! The user was not added to core.userdata.'}")
 
 
-@main.route("/login", methods=["POST"])
+@app.route("/login", methods=["POST"])
 def login():
     """Log in a user.
 
@@ -73,7 +115,7 @@ def login():
     return jsonify("{'201': 'Failure! The user was not found in auth.users and could not be logged in.'}")
     
 
-@main.route('/submit_post', methods=["POST"])
+@app.route('/submit_post', methods=["POST"])
 @login_required
 def submit_post():
     """Submit a new post to a topic or user.
@@ -131,7 +173,7 @@ def submit_post():
     return jsonify("{'307': 'Failure! The post was not added to core.uservotes.'")
 
 
-@main.route('/submit_comment', methods=["POST"])
+@app.route('/submit_comment', methods=["POST"])
 @login_required
 def submit_comment():
     """Submit a new comment to a post.
@@ -185,7 +227,7 @@ def submit_comment():
     return jsonify("{'707': 'Failure! The post was not added to core.uservotes.'")
 
 
-@main.route('/rtup', methods=["GET"])
+@app.route('/rtup', methods=["GET"])
 @login_required
 def rtup():
     """Retrieve post UUID(s) from a topic or user.
@@ -210,14 +252,13 @@ def rtup():
                                                           numPosts=2)
 
     if postUUIDs:
-        return jsonify('{' + f"'600': 'Success! Post UUID(s) have been retrieved from core.childposts.',"
-                             f"'contents': {postUUIDs}" + "}")
+        # return jsonify("\{'600': 'Success! Post UUID(s) have been retrieved frm core.childposts.', 'contents': {}\}".format(postUUIDs))
+        return jsonify('{' + f"'600': 'Success! Post UUID(s) have been retrieved from core.childposts.', 'contents': {postUUIDs}" + "}")
 
-    return jsonify('{' + f"'601': 'Failure! Post UUID(s) could not be retrieved from core.childposts.',"
-                         f"'contents': {[]}" + "}")
+    return jsonify('{' + f"'601': 'Failure! Post UUID(s) could not be retrieved from core.childposts.', 'contents': {[]}" + "}")
 
 
-@main.route('/rpcd', methods=["GET"])
+@app.route('/rpcd', methods=["GET"])
 @login_required
 def rpcd():
     """Retrieve post or comment data.
@@ -248,7 +289,7 @@ def rpcd():
                          f"'contents': {[]}" + "}")
 
 
-@main.route('/cast_vote', methods=["POST"])
+@app.route('/cast_vote', methods=["POST"])
 @login_required
 def cast_vote():
     """Send an upvote or downvote to post and record how long the user viewed it.
@@ -285,7 +326,7 @@ def cast_vote():
     return jsonify("{'503': 'Failure. The post's data could not be updated.'}")
 
 
-@main.route('/focuses', methods=["GET"])
+@app.route('/focuses', methods=["GET"])
 @login_required
 def focuses():
     """
@@ -307,7 +348,7 @@ def focuses():
     return jsonify("{" + f"'800': 'Here are your randomly ordered focuses!', 'content': {posts}'" + "}")
 
 
-@main.route('/follow', methods=["POST"])
+@app.route('/follow', methods=["POST"])
 @login_required
 def follow():
     """
@@ -321,14 +362,16 @@ def follow():
     return jsonify("{'901': 'Failure! The user follow failed.'}")
 
 
-@main.route('/profile')
+@app.route('/profile')
 @login_required
 def profile():
     return current_user.username
 
-
-@main.route('/logout')
+@app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return "logged out"
+
+if __name__ == "__main__":
+    app.run()
