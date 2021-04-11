@@ -3,7 +3,8 @@ from typing import Tuple
 from time import time
 import uuid
 
-from db_connect import SESSION
+from db_connect import gen_session
+
 
 
 READING_RATE = 250  # Words per minute
@@ -18,6 +19,7 @@ def create_user(username: str, password: str) -> Tuple[bool, bool]:
     Return: First index is result of adding to core.userdata, second is result of adding to auth.user.
     """
 <<<<<<< HEAD
+<<<<<<< HEAD
     addUserToUserdata = SESSION.execute(f"INSERT INTO core.userdata (username, bio, createdate) "
                                         f"VALUES ('{username}', '', '{int(time())}') "
                                         f"IF NOT EXISTS").one()
@@ -25,9 +27,15 @@ def create_user(username: str, password: str) -> Tuple[bool, bool]:
                                     f"VALUES ('{username}', '{password}') "
                                     f"IF NOT EXISTS").one()
 =======
+=======
+
+    SESSION = gen_session()
+
+>>>>>>> Fixed gunicorn-astra session bug, but now slow
     addUserToUser = SESSION.execute(f"insert into core.userdata (username, bio, createdate) "
                                     f"values ('{username}', '', '{int(time())}') "
                                     f"if not exists").one()
+ 
     addUserToAuth = SESSION.execute(f"insert into auth.users (username, password) "
                                     f"values ('{username}', '{password}') "
                                     f"if not exists").one()
@@ -45,7 +53,9 @@ def login(username: str, password: str) -> bool:
     password: User's hashed password.
     Return: True if username-password combo exists in auth.users, else false.
     """
+    SESSION = gen_session()
     cmd = SESSION.execute(f"SELECT * FROM auth.users WHERE username='{username}'").one()
+
 
     # If select returned results or more than two columns or passwords do not match, return false.
     if cmd is None or len(cmd) != 2 or cmd[1] != password:
