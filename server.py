@@ -330,10 +330,15 @@ def cast_vote():
 @app.route('/focuses', methods=["GET"])
 @login_required
 def focuses():
-    """
-    numPosts: int
-    username: username text
-    :return:
+    """Gets the posts from the focuses that the user follows.
+
+    JSON Expectation:
+    {
+        numPosts: int
+        username: username text
+    }
+
+    return: A list containing numPosts number of posts from the user's followed focuses.
     """
     followedTopics = db_astra.get_followed_topics(request.form['username'])
     postsPerTopic = max(1, int(request.form['numPosts']) // len(followedTopics))
@@ -352,10 +357,15 @@ def focuses():
 @app.route('/follow', methods=["POST"])
 @login_required
 def follow():
-    """
-    username: username text
-    name: name of topic or user to follow
-    :return:
+    """Follow a user or a topic.
+
+    JSON Expectation:
+    {
+        username: username text
+        name: name of topic or user to follow
+    }
+
+    return: Json if following was successful.
     """
     if db_astra.follow(request.form['name'], request.form['username']):
         return jsonify("{'900': 'Success! The user is now following.'}")

@@ -159,6 +159,7 @@ def retrieve_post_from_topic_or_user(source: str, username: str, numPosts: int):
     SESSION = gen_session()
     postIDs = SESSION.execute(f"SELECT childid FROM core.childposts WHERE parentid='{source}'").all()
 
+    # Build the CQL statement with postIDs
     whereConditions = "WHERE "
     first = True
     for row in postIDs:
@@ -167,6 +168,7 @@ def retrieve_post_from_topic_or_user(source: str, username: str, numPosts: int):
         else:
             whereConditions += f" OR postid={row[0]}"
 
+    # Get postUUIDs and order by watch time
     posts = SESSION.execute(f"SELECT postid FROM core.posts {whereConditions} ORDER BY watchtime DESC")
 
     # Get UUIDs of numPosts number of posts
