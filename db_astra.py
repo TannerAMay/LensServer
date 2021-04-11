@@ -2,16 +2,16 @@ from typing import Tuple
 
 from time import time
 import uuid
+import hashlib
 
 from db_connect import gen_session
-
 
 
 READING_RATE = 250  # Words per minute
 POSTS_PER_REQUEST = 10  # How many post UUIDs to return to client when asked for posts
 
 
-def create_user(username: str, password: str) -> Tuple[bool, bool]:
+def create_user(username: str, password: str, salt: bytes) -> Tuple[bool, bool]:
     """Add user to core.userdata and auth.user tables.
 
     username: Username of the user.
@@ -20,11 +20,18 @@ def create_user(username: str, password: str) -> Tuple[bool, bool]:
     """
     SESSION = gen_session()
 
+    hash = hashlib.pbkdf2_hmac(
+        'sha256',  # The hash digest algorithm for HMAC
+        password.encode('utf-8'),  # Convert the password to bytes
+        salt,  # Provide the salt
+        100000  # It is recommended to use at least 100,000 iterations of SHA-256
+    )
+
     addUserToUserdata = SESSION.execute(f"INSERT INTO core.userdata (username, bio, createdate) "
                                         f"VALUES ('{username}', '', '{int(time())}') "
                                         f"IF NOT EXISTS").one()
-    addUserToAuth = SESSION.execute(f"INSERT INTO auth.users (username, password) "
-                                    f"VALUES ('{username}', '{password}') "
+    addUserToAuth = SESSION.execute(f"INSERT INTO auth.users (username, password, salt) "
+                                    f"VALUES ('{username}', '{hash}', {salt}) "
                                     f"IF NOT EXISTS").one()
 
 

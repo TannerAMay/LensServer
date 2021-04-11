@@ -1,6 +1,7 @@
 from flask import Blueprint, Flask, request, Response, redirect, url_for, jsonify
 from flask_login import login_user, logout_user, login_required, current_user, LoginManager
 from random import shuffle
+from os import urandom
 
 import db_astra
 
@@ -69,7 +70,7 @@ def create_user():
     return: JSON object describing result of command.
     """
 
-    createResult = db_astra.create_user(request.form['user'], request.form['pass'])
+    createResult = db_astra.create_user(request.form['user'], request.form['pass'], urandom(32))
 
     if createResult[0] and createResult[1]:
         return jsonify("{'100': 'Success! The user was added to core.userdata and auth.users.'}")
@@ -367,11 +368,13 @@ def follow():
 def profile():
     return current_user.username
 
+
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return "logged out"
+
 
 if __name__ == "__main__":
     app.run()
