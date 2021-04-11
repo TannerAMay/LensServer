@@ -34,7 +34,6 @@ def create_user(username: str, password: str, salt: bytes) -> Tuple[bool, bool]:
                                     f"VALUES ('{username}', '{hash}', {salt}) "
                                     f"IF NOT EXISTS").one()
 
-
     return addUserToUserdata[0], addUserToAuth[0]
 
 
@@ -50,9 +49,15 @@ def login(username: str, password: str) -> bool:
     SESSION = gen_session()
     cmd = SESSION.execute(f"SELECT * FROM auth.users WHERE username='{username}'").one()
 
+    hash = hashlib.pbkdf2_hmac(
+        'sha256',  # The hash digest algorithm for HMAC
+        password.encode('utf-8'),  # Convert the password to bytes
+        cmd[2],  # Provide the salt
+        100000  # It is recommended to use at least 100,000 iterations of SHA-256
+    )
 
     # If select returned results or more than two columns or passwords do not match, return false.
-    if cmd is None or len(cmd) != 2 or cmd[1] != password:
+    if cmd is None or len(cmd) != 2 or cmd[1] != hash:
         return False
 
     return True
