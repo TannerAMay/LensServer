@@ -42,6 +42,11 @@ def load_user(username):
     return user
 
 
+@app.route("/")
+def home():
+    return "Eat me"
+
+
 @app.route("/create_user", methods=["POST"])
 def create_user():
     """Add user data to database.

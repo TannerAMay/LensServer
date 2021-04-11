@@ -1,3 +1,3 @@
 runtime: python37
-entrypoint: gunicorn --bind :4444 -w 2 wsgi:app
+entrypoint: gunicorn --bind :4444 wsgi:app --preload
 
