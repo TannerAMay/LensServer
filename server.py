@@ -109,12 +109,12 @@ def login():
         login_user(user_to_test, remember=remember)
 
         return jsonify("{'200': 'Success! The user is logged in.'")
-        #return redirect(url_for('main.profile'))
+        #return redirect(url_for('app.profile'))
 
     return jsonify("{'201': 'Failure! The user was not found in auth.users and could not be logged in.'")
     
 
-@main.route('/submit_post', methods=["POST"])
+@app.route('/submit_post', methods=["POST"])
 @login_required
 def submit_post():
     """Submit a new post to a topic or user.
@@ -172,7 +172,7 @@ def submit_post():
     return jsonify("{'307': 'Failure! The post was not added to core.uservotes.'")
 
 
-@main.route('/submit_comment', methods=["POST"])
+@app.route('/submit_comment', methods=["POST"])
 @login_required
 def submit_comment():
     """Submit a new comment to a post.
@@ -226,7 +226,7 @@ def submit_comment():
     return jsonify("{'707': 'Failure! The post was not added to core.uservotes.'")
 
 
-@main.route('/rtup', methods=["GET"])
+@app.route('/rtup', methods=["GET"])
 @login_required
 def rtup():
     """Retrieve post UUID(s) from a topic or user.
@@ -249,14 +249,13 @@ def rtup():
     postUUIDs = db_astra.retrieve_post_from_topic_or_user(request.form["source"])
 
     if postUUIDs:
-        return jsonify('{' + f"'600': 'Success! Post UUID(s) have been retrieved from core.childposts.',"
-                             f"'contents': {postUUIDs}" + "}")
+        # return jsonify("\{'600': 'Success! Post UUID(s) have been retrieved frm core.childposts.', 'contents': {}\}".format(postUUIDs))
+        return jsonify('{' + f"'600': 'Success! Post UUID(s) have been retrieved from core.childposts.', 'contents': {postUUIDs}" + "}")
 
-    return jsonify('{' + f"'601': 'Failure! Post UUID(s) could not be retrieved from core.childposts.',"
-                         f"'contents': {[]}" + "}")
+    return jsonify('{' + f"'601': 'Failure! Post UUID(s) could not be retrieved from core.childposts.', 'contents': {[]}" + "}")
 
 
-@main.route('/rpcd', methods=["GET"])
+@app.route('/rpcd', methods=["GET"])
 @login_required
 def rpcd():
     """Retrieve post or comment data.
@@ -287,7 +286,7 @@ def rpcd():
                          f"'contents': {[]}" + "}")
 
 
-@main.route('/cast_vote', methods=["POST"])
+@app.route('/cast_vote', methods=["POST"])
 @login_required
 def cast_vote():
     """Send an upvote or downvote to post and record how long the user viewed it.
@@ -324,7 +323,7 @@ def cast_vote():
     return jsonify("{'503': 'Failure. The post's data could not be updated.'}")
 
 
-@main.route('/profile')
+@app.route('/profile')
 @login_required
 def profile():
     return current_user.username
