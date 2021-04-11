@@ -344,9 +344,9 @@ def focuses():
             print('u', u)
             posts.append(db_astra.retrieve_post_comment_data(u, False))
 
-    shuffle(posts)
+    # shuffle(posts)
 
-    return jsonify("{" + f"'800': 'Here are your randomly ordered focuses!', 'content': {posts}'" + "}")
+    return jsonify("{" + f"'800': 'Here are your not randomly ordered focuses!', 'content': {posts}'" + "}")
 
 
 @app.route('/follow', methods=["POST"])
