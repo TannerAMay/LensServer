@@ -95,11 +95,19 @@ def submit_comment(author: str, content: str, parentID: uuid.UUID):
     return addToComments[0], addToChildComments[0], addToUserVotes[0]
 
 
-def retrieve_post_data(postUUID: uuid.UUID):
-    pass
+def retrieve_post_comment_data(postUUID: uuid.UUID, comment: bool):
+    if comment:
+        cmd = SESSION.execute(f"SELECT * FROM core.comments WHERE postid={postUUID}").one()
+    else:
+        cmd = SESSION.execute(f"SELECT * FROM core.posts WHERE postid={postUUID}").one()
+
+    if cmd is not None:
+        return cmd
+
+    return tuple()
 
 
-def retrieve_comments(postUUID: uuid.UUID):
+def retrieve_comment_data(postUUID: uuid.UUID):
     pass
 
 

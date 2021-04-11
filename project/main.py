@@ -187,7 +187,7 @@ def submit_comment():
 @main.route('/rtup', methods=["GET"])
 @login_required
 def rtup():
-    """Retrieve posts from a topic or user.
+    """Retrieve post UUID(s) from a topic or user.
 
     JSON Expectation:
     {
@@ -207,10 +207,41 @@ def rtup():
     postUUIDs = db_astra.retrieve_post_from_topic_or_user(request.form["source"])
 
     if postUUIDs:
-        return jsonify('{' + f"'600': 'Success! Posts have been retrieved from core.childposts.',"
+        return jsonify('{' + f"'600': 'Success! Post UUID(s) have been retrieved from core.childposts.',"
                              f"'contents': {postUUIDs}" + "}")
 
-    return jsonify('{' + f"'601': 'Failure! Posts could not be retrieved from core.childposts.',"
+    return jsonify('{' + f"'601': 'Failure! Post UUID(s) could not be retrieved from core.childposts.',"
+                         f"'contents': {[]}" + "}")
+
+
+@main.route('/rpcd', methods=["GET"])
+@login_required
+def rpcd():
+    """Retrieve post or comment data.
+
+    JSON Expectation:
+    {
+        'source': UUID of post/comment -> NO QUOTES!.
+        'iscomment': bool -> True if requesting a comment.
+    }
+
+    Codes: Code Signature: 4
+        400: Post/comment data successfully retrieved.
+        401: Post/comment data could not be retrieved from core.posts or core.comments, respectively.
+
+    return: JSON Result:
+    {
+        '<error number string>': '<error description string>',
+        'contents': '<Python list containing all data associated with post/comment>'
+    }
+    """
+    data = db_astra.retrieve_post_comment_data(request.form['source'], request.form['iscomment'][0] == 'T')
+
+    if data:
+        return jsonify('{' + f"'400': 'Success! Post/comment data successfully retrieved from core.posts or core.comments, respectively.',"
+                             f"'contents': {data}" + "}")
+
+    return jsonify('{' + f"'401': 'Failure! Post/comment data could not be retrieved from core.posts or core.comments, respectively.',"
                          f"'contents': {[]}" + "}")
 
 
@@ -232,19 +263,7 @@ DOCSTRINGS FOR FUTURE FUNCTIONS
 """
 
 # Viewing a post
-"""Retrieve a post from the database.
 
-JSON Expectation:
-{
-    'postid': UUID
-}
-
-Codes: Code Signature: 4
-    400: Post successfully retrieved.
-    ... add more errors as function is made
-
-return: JSON object describing result of command.
-"""
 
 # Casting a vote and recording viewtime
 """Send an upvote or downvote to post and record how long the user viewed it.
