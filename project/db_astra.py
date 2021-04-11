@@ -17,12 +17,21 @@ def create_user(username: str, password: str) -> Tuple[bool, bool]:
     password: User's hashed password.
     Return: First index is result of adding to core.userdata, second is result of adding to auth.user.
     """
+<<<<<<< HEAD
     addUserToUserdata = SESSION.execute(f"INSERT INTO core.userdata (username, bio, createdate) "
                                         f"VALUES ('{username}', '', '{int(time())}') "
                                         f"IF NOT EXISTS").one()
     addUserToAuth = SESSION.execute(f"INSERT INTO auth.users (username, password) "
                                     f"VALUES ('{username}', '{password}') "
                                     f"IF NOT EXISTS").one()
+=======
+    addUserToUser = SESSION.execute(f"insert into core.userdata (username, bio, createdate) "
+                                    f"values ('{username}', '', '{int(time())}') "
+                                    f"if not exists").one()
+    addUserToAuth = SESSION.execute(f"insert into auth.users (username, password) "
+                                    f"values ('{username}', '{password}') "
+                                    f"if not exists").one()
+>>>>>>> Removed __init__.py and fixed typo for addUserToUser
 
     return addUserToUserdata[0], addUserToAuth[0]
 
