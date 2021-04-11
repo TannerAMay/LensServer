@@ -134,15 +134,40 @@ def cast_vote_record_viewtime(username: str, source: uuid.UUID, upvote: bool, vi
     return addToUservotes[0], updateTable[0]
 
 
-def retrieve_post_from_topic_or_user(source: str):
-    cmd = SESSION.execute(f"SELECT childid FROM core.childposts WHERE parentid='{source}'").all()
+def retrieve_post_from_topic_or_user(source: str, username: str, numPosts: int):
+    cmd = SESSION.execute(f"SELECT childid FROM core.childposts "
+                          f"WHERE parentid='{source}'").all()
 
-    # Get UUIDs of POSTS_PER_REQUEST number of posts
+    # Get UUIDs of numPosts number of posts
     postUUIDs = []
-    for i, row in enumerate(cmd):
-        if i > POSTS_PER_REQUEST - 1:
+    for row in cmd:
+        if SESSION.execute(f"SELECT username FROM core.uservotes WHERE username='{username}' and postid={row[0]}").one() is not None:
+            continue
+        if len(postUUIDs) > numPosts - 1:
             break
         postUUIDs.append(row[0])
 
     return postUUIDs
+
+
+def get_followed_topics(username: str):
+    cmd = SESSION.execute(f"SELECT follows FROM core.following "
+                          f"WHERE username='{username}'").all()
+    topics = SESSION.execute(f"SELECT name FROM core.topics").all()
+
+    followedTopics = []
+    for f in cmd:
+        if f in topics:
+            followedTopics.append(f[0])
+
+    return followedTopics
+
+
+def follow(name: str, username: str):
+    cmd = SESSION.execute(f"INSERT INTO core.following "
+                          f"(username, follows) "
+                          f"VALUES "
+                          f"('{username}', '{name}') "
+                          f"IF NOT EXISTS").one()
+    return cmd[0]
 

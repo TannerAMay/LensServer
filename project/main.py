@@ -1,5 +1,6 @@
 from flask import Blueprint, Flask, request, Response, redirect, url_for, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
+from random import shuffle
 
 import db_astra
 
@@ -29,15 +30,15 @@ def create_user():
     createResult = db_astra.create_user(request.form['user'], request.form['pass'])
 
     if createResult[0] and createResult[1]:
-        return jsonify("{'100': 'Success! The user was added to core.userdata and auth.users.'")
+        return jsonify("{'100': 'Success! The user was added to core.userdata and auth.users.'}")
     else:
         if not createResult[0] and not createResult[1]:
-            return jsonify("{'101': 'Failure! The user not added to core.userdata nor auth.users.'")
+            return jsonify("{'101': 'Failure! The user not added to core.userdata nor auth.users.'}")
 
         if createResult[0]:
-            return jsonify("{'102': 'Failure! The user was not added to auth.users.'")
+            return jsonify("{'102': 'Failure! The user was not added to auth.users.'}")
 
-    return jsonify("{'103': 'Failure! The user was not added to core.userdata.'")
+    return jsonify("{'103': 'Failure! The user was not added to core.userdata.'}")
 
 
 @main.route("/login", methods=["POST"])
@@ -66,10 +67,10 @@ def login():
         user_to_test.password = request.form['pass']  # Might not need
         login_user(user_to_test, remember=remember)
 
-        return jsonify("{'200': 'Success! The user is logged in.'")
+        return jsonify("{'200': 'Success! The user is logged in.'}")
         #return redirect(url_for('main.profile'))
 
-    return jsonify("{'201': 'Failure! The user was not found in auth.users and could not be logged in.'")
+    return jsonify("{'201': 'Failure! The user was not found in auth.users and could not be logged in.'}")
     
 
 @main.route('/submit_post', methods=["POST"])
@@ -192,6 +193,7 @@ def rtup():
     JSON Expectation:
     {
         'source': '<text>' -> Usernames or topics can go in this field
+        'username': <username text>
     }
 
     Codes: Code Signature: 6
@@ -204,7 +206,8 @@ def rtup():
         'contents': '<Python list containing up to zero to ten, inclusive, UUIDs>'
     }
     """
-    postUUIDs = db_astra.retrieve_post_from_topic_or_user(request.form["source"])
+    postUUIDs = db_astra.retrieve_post_from_topic_or_user(request.form["source"], username=request.form["username"],
+                                                          numPosts=2)
 
     if postUUIDs:
         return jsonify('{' + f"'600': 'Success! Post UUID(s) have been retrieved from core.childposts.',"
@@ -270,7 +273,7 @@ def cast_vote():
                                                    comment=request.form['iscomment'][0] == 'T',
                                                    viewtime=request.form['viewtime'])
     if cmdResult[0] and cmdResult[1]:
-        return jsonify("{'500': 'Success! The user's vot has been cast and view time counted.'}")
+        return jsonify("{'500': 'Success! The user's vote has been cast and view time counted.'}")
     else:
         if not cmdResult[0] and not cmdResult[1]:
             return jsonify("{'501': 'Failure. The vote could not be added to core.uservotes and the post's data could"
@@ -280,6 +283,42 @@ def cast_vote():
             return jsonify("{'502': 'Failure. The vote could not be added to core.uservotes.'}")
 
     return jsonify("{'503': 'Failure. The post's data could not be updated.'}")
+
+
+@main.route('/focuses', methods=["GET"])
+@login_required
+def focuses():
+    """
+    numPosts: int
+    username: username text
+    :return:
+    """
+    followedTopics = db_astra.get_followed_topics(request.form['username'])
+    postsPerTopic = max(1, int(request.form['numPosts']) // len(followedTopics))
+    print('postspertopic', postsPerTopic)
+    posts = []
+    for topic in followedTopics:
+        for u in db_astra.retrieve_post_from_topic_or_user(topic, request.form['username'], postsPerTopic):
+            print('u', u)
+            posts.append(db_astra.retrieve_post_comment_data(u, False))
+
+    shuffle(posts)
+
+    return jsonify("{" + f"'800': 'Here are your randomly ordered focuses!', 'content': {posts}'" + "}")
+
+
+@main.route('/follow', methods=["POST"])
+@login_required
+def follow():
+    """
+    username: username text
+    name: name of topic or user to follow
+    :return:
+    """
+    if db_astra.follow(request.form['name'], request.form['username']):
+        return jsonify("{'900': 'Success! The user is now following.'}")
+
+    return jsonify("{'901': 'Failure! The user follow failed.'}")
 
 
 @main.route('/profile')
@@ -293,26 +332,3 @@ def profile():
 def logout():
     logout_user()
     return "logged out"
-
-
-"""
-DOCSTRINGS FOR FUTURE FUNCTIONS
-"""
-
-# Casting a vote and recording viewtime
-"""Send an upvote or downvote to post and record how long the user viewed it.
-
-JSON Expectation:
-{
-    'username': '<username text>',
-    'postID': UUID,
-    'upvote': bool,
-    'viewtime': int
-}
-
-Codes: Code Signature: 5
-    500: Post successfully submitted.
-    ... add more errors as function is made
-
-return: JSON object describing result of command.
-"""
