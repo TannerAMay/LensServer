@@ -11,7 +11,7 @@ def create_user(username: str, password: str) -> Tuple[bool, bool]:
     password: User's hashed password.
     Return: First index is result of adding to core.userdata, second is result of adding to auth.user.
     """
-    addUserToUser = SESSION.execute(f"insert into core.userdata (username, bio, create_date) "
+    addUserToUser = SESSION.execute(f"insert into core.userdata (username, bio, createdate) "
                                     f"values ('{username}', '', '{int(time())}') "
                                     f"if not exists").one()
     addUserToAuth = SESSION.execute(f"insert into auth.users (username, password) "
