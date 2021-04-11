@@ -8,22 +8,9 @@ import db_astra
 from models import User
 from keys import FLASK_SECRET_KEY
 
-
-# from app import app
-
-# db = SQLAlchemy()
-
-# main = Blueprint('main', __name__)
-
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = FLASK_SECRET_KEY
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
-
-# db.init_app(app)
-
-# from .main import main as main_blueprint
-# app.register_blueprint(main_blueprint)
 
 login_manager = LoginManager()
 login_manager.login_view = 'login'
