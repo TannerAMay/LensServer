@@ -53,15 +53,18 @@ def submit_post(title: str, contentType: str, content: str, author: str, parentI
 
     thisUUID = uuid.uuid4()
 
+    # Add new post to posts table
     addToPosts = SESSION.execute(f"INSERT INTO core.posts "
                                  f"(postid, parentid, title, author, content, contenttype, views, upvotes, downvotes, watchtime, dateposted) "
                                  f"VALUES "
                                  f"({thisUUID}, '{parentID}', '{title}', '{author}', '{content}', '{contentType}', {1}, {1}, {0}, {watchTime}, {int(time())}) "
                                  f"IF NOT EXISTS").one()
+    # Associate new post with topic or user
     addToChildPosts = SESSION.execute(f"INSERT INTO core.childposts "
                                       f"(parentid, childid) "
                                       f"VALUES ('{parentID}', {thisUUID}) "
                                       f"IF NOT EXISTS").one()
+    # Add initial vote to uservotes table
     addToUservotes = SESSION.execute(f"INSERT INTO core.uservotes "
                                      f"(postid, username, upvoted, viewtime) "
                                      f"VALUES "
@@ -76,16 +79,19 @@ def submit_comment(author: str, content: str, parentID: uuid.UUID):
 
     thisUUID = uuid.uuid4()
 
+    # Add new comment to comment table
     addToComments = SESSION.execute(f"INSERT INTO core.comments "
                                     f"(postid, author, content, views, upvotes, downvotes, watchtime, dateposted) "
                                     f"VALUES "
                                     f"({thisUUID}, '{author}', '{content}', {1}, {1}, {0}, {watchTime}, {int(time())})"
                                     f"IF NOT EXISTS").one()
+    # Associate new comment with a post
     addToChildComments = SESSION.execute(f"INSERT INTO core.childcomments "
                                          f"(parentid, childid) "
                                          f"VALUES "
                                          f"({parentID}, {thisUUID}) "
                                          f"IF NOT EXISTS").one()
+    # Add initial vote score to comment
     addToUserVotes = SESSION.execute(f"INSERT INTO core.uservotes "
                                      f"(postid, username, upvoted, viewtime) "
                                      f"VALUES "
@@ -107,17 +113,31 @@ def retrieve_post_comment_data(postUUID: uuid.UUID, comment: bool):
     return tuple()
 
 
-def retrieve_comment_data(postUUID: uuid.UUID):
-    pass
+def cast_vote_record_viewtime(username: str, source: uuid.UUID, upvote: bool, viewtime: int, comment: bool):
+    # Create row in uservotes table
+    addToUservotes = SESSION.execute(f"INSERT INTO core.uservotes "
+                                     f"(postid, username, upvoted, viewtime) "
+                                     f"VALUES "
+                                     f"({source}, '{username}', {upvote}, {viewtime}) "
+                                     f"IF NOT EXISTS").one()
 
-
-def post_cast_vote_record_viewtime(username: str, postUUID: uuid.UUID, upvote: bool, viewtime: int):
-    pass
+    # Update values in post or comments table
+    table = "core.comments" if comment else "core.posts"
+    voteType = "upvotes" if upvote else "downvotes"
+    incrementValue = SESSION.execute(f"SELECT views, {voteType}, watchtime FROM {table} "
+                                     f"WHERE postid={source}").one()
+    updateTable = SESSION.execute(f"UPDATE {table} "
+                                  f"SET views={incrementValue[0] + 1}, {voteType}={incrementValue[1] + 1},"
+                                  f"watchtime={incrementValue[2] + int(viewtime)} "
+                                  f"WHERE postid={source} "
+                                  f"IF EXISTS").one()
+    return addToUservotes[0], updateTable[0]
 
 
 def retrieve_post_from_topic_or_user(source: str):
     cmd = SESSION.execute(f"SELECT childid FROM core.childposts WHERE parentid='{source}'").all()
 
+    # Get UUIDs of POSTS_PER_REQUEST number of posts
     postUUIDs = []
     for i, row in enumerate(cmd):
         if i > POSTS_PER_REQUEST - 1:

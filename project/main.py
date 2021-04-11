@@ -245,6 +245,43 @@ def rpcd():
                          f"'contents': {[]}" + "}")
 
 
+@main.route('/cast_vote', methods=["POST"])
+@login_required
+def cast_vote():
+    """Send an upvote or downvote to post and record how long the user viewed it.
+
+    JSON Expectation:
+    {
+        'username': '<username text>',
+        'source': UUID,
+        'upvote': bool,
+        'viewtime': int,
+        'iscomment': bool
+    }
+
+    Codes: Code Signature: 5
+        500: Post successfully submitted.
+        ... add more errors as function is made
+
+    return: JSON object describing result of command.
+    """
+    cmdResult = db_astra.cast_vote_record_viewtime(username=request.form['username'], source=request.form['source'],
+                                                   upvote=request.form['upvote'][0] == 'T',
+                                                   comment=request.form['iscomment'][0] == 'T',
+                                                   viewtime=request.form['viewtime'])
+    if cmdResult[0] and cmdResult[1]:
+        return jsonify("{'500': 'Success! The user's vot has been cast and view time counted.'}")
+    else:
+        if not cmdResult[0] and not cmdResult[1]:
+            return jsonify("{'501': 'Failure. The vote could not be added to core.uservotes and the post's data could"
+                           "not be updated.'}")
+
+        if not cmdResult[0]:
+            return jsonify("{'502': 'Failure. The vote could not be added to core.uservotes.'}")
+
+    return jsonify("{'503': 'Failure. The post's data could not be updated.'}")
+
+
 @main.route('/profile')
 @login_required
 def profile():
@@ -261,9 +298,6 @@ def logout():
 """
 DOCSTRINGS FOR FUTURE FUNCTIONS
 """
-
-# Viewing a post
-
 
 # Casting a vote and recording viewtime
 """Send an upvote or downvote to post and record how long the user viewed it.
