@@ -16,26 +16,26 @@ login_manager = LoginManager()
 login_manager.login_view = 'login'
 login_manager.init_app(app)
 
-from models import User
 
 @login_manager.user_loader
 def load_user(username):
     """Load user from Astra by username, load into User object
-    
+
     current_user calls this function
     """
     user = User()
     user.username = username
     user.password = "test"
-    ## add all data from astra for this user
-    
+    # add all data from astra for this user
+
     return user
 
 
 @app.route("/")
 def home():
-    print("FEFE")
-    return "Eat me"
+    # print("FEFE")
+    # return "Eat me"
+    return render_template('index.html')
 
 
 @app.route("/create_user", methods=["POST"])
@@ -57,7 +57,8 @@ def create_user():
     return: JSON object describing result of command.
     """
 
-    createResult = db_astra.create_user(request.form['user'], request.form['pass'], urandom(32))
+    createResult = db_astra.create_user(
+        request.form['user'], request.form['pass'], urandom(32))
 
     if createResult[0] and createResult[1]:
         return jsonify("{'100': 'Success! The user was added to core.userdata and auth.users.'}")
@@ -98,10 +99,10 @@ def login():
         login_user(user_to_test, remember=remember)
 
         return jsonify("{'200': 'Success! The user is logged in.'}")
-        #return redirect(url_for('main.profile'))
+        # return redirect(url_for('main.profile'))
 
     return jsonify("{'201': 'Failure! The user was not found in auth.users and could not be logged in.'}")
-    
+
 
 @app.route('/submit_post', methods=["POST"])
 @login_required
@@ -267,7 +268,8 @@ def rpcd():
         'contents': '<Python list containing all data associated with post/comment>'
     }
     """
-    data = db_astra.retrieve_post_comment_data(request.form['source'], request.form['iscomment'][0] == 'T')
+    data = db_astra.retrieve_post_comment_data(
+        request.form['source'], request.form['iscomment'][0] == 'T')
 
     if data:
         return jsonify('{' + f"'400': 'Success! Post/comment data successfully retrieved from core.posts or core.comments, respectively.',"
@@ -328,7 +330,8 @@ def focuses():
     return: A list containing numPosts number of posts from the user's followed focuses.
     """
     followedTopics = db_astra.get_followed_topics(request.form['username'])
-    postsPerTopic = max(1, int(request.form['numPosts']) // len(followedTopics))
+    postsPerTopic = max(
+        1, int(request.form['numPosts']) // len(followedTopics))
     print('postspertopic', postsPerTopic)
     posts = []
     for topic in followedTopics:
