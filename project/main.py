@@ -1,14 +1,46 @@
 from flask import Blueprint, Flask, request, Response, redirect, url_for, jsonify
-from flask_login import login_user, logout_user, login_required, current_user
+from flask_login import login_user, logout_user, login_required, current_user, LoginManager
 
 import db_astra
 
-from .models import User
+from models import User
+from keys import FLASK_SECRET_KEY
 
-main = Blueprint('main', __name__)
+# db = SQLAlchemy()
+
+# main = Blueprint('main', __name__)
+
+app = Flask(__name__)
+
+app.config['SECRET_KEY'] = FLASK_SECRET_KEY
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+
+# db.init_app(app)
+
+# from .main import main as main_blueprint
+# app.register_blueprint(main_blueprint)
+
+login_manager = LoginManager()
+login_manager.login_view = 'app.login'
+login_manager.init_app(app)
+
+from models import User
+
+@login_manager.user_loader
+def load_user(username):
+    """Load user from Astra by username, load into User object
+    
+    current_user calls this function
+    """
+    user = User()
+    user.username = username
+    user.password = "test"
+    ## add all data from astra for this user
+    
+    return user
 
 
-@main.route("/create_user", methods=["POST"])
+@app.route("/create_user", methods=["POST"])
 def create_user():
     """Add user data to database.
 
@@ -37,7 +69,7 @@ def create_user():
     return jsonify("{'102': 'Failure! The user was not added to core.user.'")
 
 
-@main.route("/login", methods=["POST"])
+@app.route("/login", methods=["POST"])
 def login():
     """Log in a user.
 
@@ -69,13 +101,12 @@ def login():
     return jsonify("{'201': 'Failure! The user was not found in auth.users and could not be logged in.'")
     
 
-@main.route('/profile')
+@app.route('/profile')
 @login_required
 def profile():
     return current_user.username
 
-
-@main.route('/logout')
+@app.route('/logout')
 @login_required
 def logout():
     logout_user()
@@ -153,3 +184,5 @@ Codes: Code Signature: 6
 
 return: JSON object describing result of command.
 """
+if __name__ == "__main__":
+    app.run()
