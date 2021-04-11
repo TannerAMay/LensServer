@@ -12,6 +12,7 @@
 # below:
 .git
 .gitignore
+auth/
 
 # Python pycache:
 __pycache__/
