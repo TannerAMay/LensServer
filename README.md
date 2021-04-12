@@ -34,3 +34,87 @@ The first command generates the certificate and the private key to be used with 
 The second runs gunicorn but forces HTTPS.
 
 ```gunicorn --certfile=cert.pem --keyfile=key.pem --bind :443 wsgi:app --preload```
+
+## Database Layout
+```
+CREATE TABLE core.userdata
+(
+  username TEXT,
+  bio TEXT,
+  createdate TIMESTAMP, --default timestamp
+  PRIMARY KEY (username)
+);
+
+CREATE TABLE core.uservotes
+(
+  postid UUID,
+  username TEXT,
+  upvoted BOOLEAN, --default false
+  viewtime INT,
+  PRIMARY KEY (postID, username)
+);
+
+CREATE TABLE core.posts
+(
+  postid UUID,
+  parentid TEXT,
+  title TEXT,
+  author TEXT, --default user(username)
+  content TEXT,
+  contenttype TEXT,
+  views INT, --default 0
+  upvotes INT, --default 0
+  downvotes INT,  --default 0 
+  watchtime INT, --default 0
+  dateposted TIMESTAMP, --default TIMESTAMP
+  Primary KEY (postID),
+);
+
+CREATE TABLE core.comments
+(
+  postid UUID,
+  author TEXT, --default user(username)
+  content TEXT,
+  views INT, --default 0
+  upvotes INT, --default 0
+  downvotes INT,  --default 0 
+  watchtime INT, --default 0
+  dateposted TIMESTAMP, --default TIMESTAMP
+  Primary KEY (postID),
+);
+
+CREATE TABLE auth.users
+(
+  username TEXT,
+  password TEXT,
+);
+
+CREATE TABLE core.topics
+(
+  bio TEXT,
+  name TEXT,
+  followers INT, --default 0
+  PRIMARY KEY (name)
+);
+
+CREATE TABLE core.following
+(
+  username TEXT, 
+  follows TEXT,
+  PRIMARY KEY (username)
+);
+
+CREATE TABLE core.childcomments
+(
+  parentid UUID,
+  childid UUID,
+  PRIMARY KEY (parentid, childid)
+);
+
+CREATE TABLE childposts
+(
+  parentid TEXT,
+  childid UUID,
+  PRIMARY KEY (parentid, childid)
+);
+```
