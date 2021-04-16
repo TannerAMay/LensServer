@@ -2,7 +2,7 @@
     <title>Lens</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
 
     <body>
 
@@ -16,6 +16,6 @@
         </div>
         <hr>
         <h1 style="text-align: center;">OCTOCAT</h1>
-        <img src="octocat.jpg" alt="Octocat" class="center">
+        <img src="{{ url_for('static', filename='octocat.jpg')}}" alt="Octocat" class="center">
     </main>
 </html>

@@ -1,4 +1,4 @@
-from flask import Blueprint, Flask, request, Response, redirect, url_for, jsonify
+from flask import Blueprint, Flask, request, Response, redirect, url_for, jsonify, render_template
 from flask_login import login_user, logout_user, login_required, current_user, LoginManager
 from random import shuffle
 from os import urandom
